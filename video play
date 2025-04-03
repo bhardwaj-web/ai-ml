@@ -1,0 +1,32 @@
+import cv2
+from ffpyplayer.player import MediaPlayer
+
+file = "sample.mp4"
+video = cv2.VideoCapture(file)
+player = MediaPlayer(file)
+
+while True:
+    ret, frame = video.read()
+    audio_frame, val = player.get_frame()
+
+    if not ret:
+        print("End of video")
+        break
+
+    # Resize frame (optional)
+    frame = cv2.resize(frame, (800, 600))  # Adjust size as needed
+
+    # Show video frame
+    cv2.imshow("Video", frame)
+
+    # Process audio
+    if val != 'eof' and audio_frame is not None:
+        img, t = audio_frame  # Handle audio frame (optional)
+
+    # Exit when 'q' is pressed
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+
+# Release resources
+video.release()
+cv2.destroyAllWindows()
