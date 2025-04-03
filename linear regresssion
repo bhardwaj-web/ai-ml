@@ -1,0 +1,79 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+# Load dataset
+url = 'data_for_lr.csv'
+data = pd.read_csv(url)
+data = data.dropna()
+
+# Training dataset and labels
+train_input = np.array(data.x[:500]).reshape(-1, 1)
+train_output = np.array(data.y[:500]).reshape(-1, 1)
+
+# Validation dataset and labels
+test_input = np.array(data.x[500:700]).reshape(-1, 1)
+test_output = np.array(data.y[500:700]).reshape(-1, 1)
+
+class LinearRegression:
+    def __init__(self):
+        self.parameters = {}
+
+    def forward_propagation(self, train_input):
+        m = self.parameters['m']
+        c = self.parameters['c']
+        return np.multiply(m, train_input) + c
+
+    def cost_function(self, predictions, train_output):
+        return np.mean((train_output - predictions) ** 2)
+
+    def backward_propagation(self, train_input, train_output, predictions):
+        n = len(train_input)
+        df = predictions - train_output
+        dm = (2 / n) * np.mean(train_input * df)
+        dc = (2 / n) * np.mean(df)
+        return {'dm': dm, 'dc': dc}
+
+    def update_parameters(self, derivatives, learning_rate):
+        self.parameters['m'] -= learning_rate * derivatives['dm']
+        self.parameters['c'] -= learning_rate * derivatives['dc']
+
+    def train(self, train_input, train_output, learning_rate, iters):
+        # Initialize random parameters
+        self.parameters['m'] = np.random.uniform(-1, 1)
+        self.parameters['c'] = np.random.uniform(-1, 1)
+        
+        self.loss = []
+        
+        # Set up animation
+        fig, ax = plt.subplots()
+        x_vals = np.linspace(min(train_input), max(train_input), 100)
+        line, = ax.plot(x_vals, self.parameters['m'] * x_vals + self.parameters['c'], color='red', label='Regression Line')
+        ax.scatter(train_input, train_output, marker='o', color='green', label='Training Data')
+        ax.set_ylim(0, max(train_output) + 1)
+        
+        def update(frame):
+            predictions = self.forward_propagation(train_input)
+            cost = self.cost_function(predictions, train_output)
+            derivatives = self.backward_propagation(train_input, train_output, predictions)
+            self.update_parameters(derivatives, learning_rate)
+            line.set_ydata(self.parameters['m'] * x_vals + self.parameters['c'])
+            self.loss.append(cost)
+            print(f"Iteration = {frame + 1}, Loss = {cost}")
+            return line,
+        
+        ani = FuncAnimation(fig, update, frames=iters, interval=200, blit=True)
+        ani.save('linear_regression_A.gif', writer='ffmpeg')
+        
+        plt.xlabel('Input')
+        plt.ylabel('Output')
+        plt.title('Linear Regression')
+        plt.legend()
+        plt.show()
+        
+        return self.parameters, self.loss
+
+# Example usage
+linear_reg = LinearRegression()
+parameters, loss = linear_reg.train(train_input, train_output, 0.0001, 20)
