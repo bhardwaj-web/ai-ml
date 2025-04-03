@@ -1,0 +1,29 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+
+# Ignore warnings
+warnings.filterwarnings('ignore')
+
+# Load dataset
+df = pd.read_csv('tesla.csv')
+
+# Display basic information
+print(df.head())   # First 5 rows
+print(df.shape)    # Shape of dataset (rows, columns)
+print(df.describe())  # Statistical summary
+print(df.info())   # Column data types & missing values
+
+# Ensure 'close' column exists
+if 'close' in df.columns:
+    # Plot Tesla closing price
+    plt.figure(figsize=(15, 5))
+    plt.plot(df['close'], color='blue', label='Close Price')
+    plt.title('Tesla Closing Price Trend', fontsize=15)
+    plt.xlabel('Time')
+    plt.ylabel('Price in USD')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+else:
+    print("Column 'close' not found in dataset.")
